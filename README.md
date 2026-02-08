@@ -151,13 +151,13 @@ The agent also generates a human-readable **reasoning** explaining exactly why i
 ## Routing Rules & Priority Logic
 Rules are applied top to bottom. The first match wins.
 
-| Priority       | Route                 | Condition                               |  Example    
-|----------------|-----------------------|---------------------------------------------------------------------------------------|
-| 1 (Highest) 🚨| **Investigation Flag**| Description contains fraud keywords  |"The circumstances appear staged and incosistant |
-| 2 🏥          | **Specialist Queue**   | Claim type contains injury keywords     | Claim type = "Injury - Bodily Injury"       |
-| 3 📝          | **Manual Review**      | Any mandatory field is missing or empty | effectiveDates is null                      |
-| 4 ⚡          | **Fast-track**         | Damage < ₹25,000 AND all fields present | Damage = ₹8,500, all fields complete        |
-| 5 (Default) 📦| **Standard Processing**| None of the above conditions match      | Damage = ₹28,500, all fields present        |
+| Priority       | Route                 | Condition                               |  Example                                        |
+|----------------|-----------------------|-----------------------------------------|-------------------------------------------------|
+| 1 (Highest) 🚨| **Investigation Flag** | Description contains fraud keywords     |"The circumstances appear staged and incosistant |
+| 2 🏥          | **Specialist Queue**   | Claim type contains injury keywords     | Claim type = "Injury - Bodily Injury"           |
+| 3 📝          | **Manual Review**      | Any mandatory field is missing or empty | effectiveDates is null                          |
+| 4 ⚡          | **Fast-track**         | Damage < ₹25,000 AND all fields present | Damage = ₹8,500, all fields complete            |
+| 5 (Default) 📦| **Standard Processing**| None of the above conditions match      | Damage = ₹28,500, all fields present            |
 
 
 **Why this priority order?**
@@ -539,4 +539,4 @@ OpenAI GPT-4o-mini (Primary)
 ---
 
 
-## Thank You...
+### Thank You...
