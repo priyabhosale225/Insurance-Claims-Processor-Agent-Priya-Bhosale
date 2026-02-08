@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 Insurance Claims Processor Agent</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* ===== RESET & BASE ===== */
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #06080d;
+            --bg-secondary: #0c1018;
+            --bg-card: rgba(15, 20, 32, 0.85);
+            --bg-card-hover: rgba(20, 28, 45, 0.9);
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.06);
+            --text-primary: #e8ecf4;
+            --text-secondary: #8892a8;
+            --text-muted: #505a6e;
+            --accent: #6c5ce7;
+            --accent-glow: rgba(108, 92, 231, 0.3);
+            --success: #00d2a0;
+            --success-glow: rgba(0, 210, 160, 0.2);
+            --warning: #ffc53d;
+            --warning-glow: rgba(255, 197, 61, 0.15);
+            --danger: #ff6b6b;
+            --danger-glow: rgba(255, 107, 107, 0.15);
+            --info: #48c6ef;
+            --info-glow: rgba(72, 198, 239, 0.15);
+            --specialist: #e056a0;
+            --specialist-glow: rgba(224, 86, 160, 0.15);
+            --radius: 16px;
+            --radius-sm: 10px;
+            --radius-xs: 6px;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* ===== ANIMATED BACKGROUND ===== */
+        .bg-effects {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .bg-effects .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.12;
+            animation: orbFloat 20s ease-in-out infinite;
+        }
+        .bg-effects .orb:nth-child(1) {
+            width: 600px; height: 600px;
+            background: var(--accent);
+            top: -10%; left: -10%;
+            animation-delay: 0s;
+        }
+        .bg-effects .orb:nth-child(2) {
+            width: 500px; height: 500px;
+            background: #e056a0;
+            bottom: -10%; right: -5%;
+            animation-delay: -7s;
+            animation-duration: 25s;
+        }
+        .bg-effects .orb:nth-child(3) {
+            width: 400px; height: 400px;
+            background: var(--info);
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: -14s;
+            animation-duration: 30s;
+        }
+        @keyframes orbFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(40px, -60px) scale(1.1); }
+            50% { transform: translate(-30px, 40px) scale(0.95); }
+            75% { transform: translate(50px, 20px) scale(1.05); }
+        }
+
+        .noise-overlay {
+            position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0.025;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            background-repeat: repeat; background-size: 256px;
+        }
+
+        /* ===== LAYOUT ===== */
+        .app-container {
+            position: relative;
+            z-index: 2;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 24px 80px;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            text-align: center;
+            margin-bottom: 48px;
+            animation: fadeInUp 0.8s ease;
+        }
+        .header .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+        .badge .dot {
+            width: 7px; height: 7px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 var(--success-glow); }
+            50% { opacity: 0.7; box-shadow: 0 0 0 8px transparent; }
+        }
+        .header h1 {
+            font-size: clamp(28px, 5vw, 42px);
+            font-weight: 800;
+            background: linear-gradient(135deg, #e8ecf4 0%, #6c5ce7 50%, #e056a0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+            margin-bottom: 10px;
+        }
+        .header p {
+            color: var(--text-secondary);
+            font-size: 15px;
+            font-weight: 300;
+            max-width: 520px;
+            margin: 0 auto;
+        }
+
+        /* ===== CARDS ===== */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 28px;
+            backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+            margin-bottom: 24px;
+        }
+        .card:hover { border-color: rgba(108, 92, 231, 0.15); }
+
+        .card-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card-title .icon {
+            width: 32px; height: 32px;
+            border-radius: var(--radius-xs);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px;
+        }
+
+        /* ===== UPLOAD ZONE ===== */
+        .upload-zone {
+            border: 2px dashed rgba(108, 92, 231, 0.2);
+            border-radius: var(--radius);
+            padding: 50px 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .upload-zone::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, var(--accent-glow) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: var(--accent);
+            background: rgba(108, 92, 231, 0.04);
+        }
+        .upload-zone:hover::before, .upload-zone.dragover::before { opacity: 1; }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            position: relative;
+            z-index: 1;
+        }
+        .upload-zone h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+            position: relative;
+            z-index: 1;
+        }
+        .upload-zone p {
+            color: var(--text-muted);
+            font-size: 13px;
+            position: relative;
+            z-index: 1;
+        }
+        .upload-zone .formats {
+            display: inline-flex;
+            gap: 8px;
+            margin-top: 14px;
+            position: relative;
+            z-index: 1;
+        }
+        .format-tag {
+            padding: 4px 12px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent);
+        }
+        #fileInput { display: none; }
+
+        /* ===== SAMPLE BUTTONS ===== */
+        .samples-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        .sample-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-family: 'Outfit', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            width: 100%;
+        }
+        .sample-btn:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+        .sample-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .sample-btn .emoji { font-size: 18px; }
+        .sample-btn .label { flex: 1; }
+        .sample-btn .sub { font-size: 10px; color: var(--text-muted); display: block; }
+
+        /* ===== PROCESSING ANIMATION ===== */
+        .processing-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(6, 8, 13, 0.92);
+            backdrop-filter: blur(12px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 32px;
+        }
+        .processing-overlay.active { display: flex; }
+
+        .processing-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            min-width: 340px;
+        }
+        .p-step {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 20px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-sm);
+            opacity: 0.3;
+            transition: all 0.5s ease;
+        }
+        .p-step.active {
+            opacity: 1;
+            border-color: var(--accent);
+            background: rgba(108, 92, 231, 0.08);
+        }
+        .p-step.done {
+            opacity: 1;
+            border-color: var(--success);
+            background: rgba(0, 210, 160, 0.05);
+        }
+        .p-step .step-icon {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            flex-shrink: 0;
+        }
+        .p-step.active .step-icon {
+            background: var(--accent-glow);
+            border-color: var(--accent);
+            animation: spinIcon 1.5s linear infinite;
+        }
+        .p-step.done .step-icon {
+            background: var(--success-glow);
+            border-color: var(--success);
+        }
+        @keyframes spinIcon { 0% { transform: rotate(0); } 100% { transform: rotate(360deg); } }
+        .p-step .step-text {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        .p-step.active .step-text { color: var(--text-primary); }
+        .p-step.done .step-text { color: var(--success); }
+
+        /* ===== RESULT SECTION ===== */
+        .result-section { display: none; animation: fadeInUp 0.6s ease; }
+        .result-section.visible { display: block; }
+
+        /* Route Banner */
+        .route-banner {
+            padding: 24px 28px;
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 24px;
+            border: 1px solid;
+        }
+        .route-banner .route-icon {
+            width: 52px; height: 52px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+        .route-banner .route-text h2 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .route-banner .route-text p {
+            font-size: 13px;
+            opacity: 0.8;
+        }
+        .route-banner .claim-id {
+            margin-left: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            padding: 6px 14px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 100px;
+            white-space: nowrap;
+        }
+
+        /* Route colors */
+        .route-fast-track { background: rgba(0,210,160,0.06); border-color: rgba(0,210,160,0.2); color: var(--success); }
+        .route-fast-track .route-icon { background: var(--success-glow); }
+        .route-manual-review { background: rgba(255,197,61,0.06); border-color: rgba(255,197,61,0.2); color: var(--warning); }
+        .route-manual-review .route-icon { background: var(--warning-glow); }
+        .route-investigation { background: rgba(255,107,107,0.06); border-color: rgba(255,107,107,0.2); color: var(--danger); }
+        .route-investigation .route-icon { background: var(--danger-glow); }
+        .route-specialist { background: rgba(224,86,160,0.06); border-color: rgba(224,86,160,0.2); color: var(--specialist); }
+        .route-specialist .route-icon { background: var(--specialist-glow); }
+        .route-standard { background: rgba(72,198,239,0.06); border-color: rgba(72,198,239,0.2); color: var(--info); }
+        .route-standard .route-icon { background: var(--info-glow); }
+
+        /* Fields grid */
+        .fields-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .field-section {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-sm);
+            padding: 20px;
+        }
+        .field-section h4 {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent);
+            margin-bottom: 14px;
+            font-weight: 600;
+        }
+        .field-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            gap: 12px;
+        }
+        .field-row:last-child { border-bottom: none; }
+        .field-key {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 500;
+            min-width: 100px;
+            flex-shrink: 0;
+        }
+        .field-value {
+            font-size: 13px;
+            color: var(--text-primary);
+            font-weight: 500;
+            text-align: right;
+            word-break: break-word;
+        }
+        .field-value.missing {
+            color: var(--danger);
+            font-style: italic;
+            font-size: 11px;
+        }
+
+        /* Missing fields & inconsistencies */
+        .alert-box {
+            padding: 16px 20px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 16px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+        .alert-box.warning { background: rgba(255,197,61,0.06); border: 1px solid rgba(255,197,61,0.15); }
+        .alert-box.danger { background: rgba(255,107,107,0.06); border: 1px solid rgba(255,107,107,0.15); }
+        .alert-box .alert-icon { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
+        .alert-box .alert-content { flex: 1; }
+        .alert-box .alert-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+        .alert-box.warning .alert-title { color: var(--warning); }
+        .alert-box.danger .alert-title { color: var(--danger); }
+        .alert-box .alert-list { font-size: 12px; color: var(--text-secondary); }
+
+        /* JSON output */
+        .json-container {
+            position: relative;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+        }
+        .json-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: var(--glass);
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .json-header span {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .copy-btn {
+            padding: 4px 12px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xs);
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover { background: var(--accent-glow); color: var(--accent); border-color: var(--accent); }
+        .json-body {
+            padding: 16px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .json-body pre {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            line-height: 1.7;
+            color: var(--text-secondary);
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        /* ===== HISTORY TABLE ===== */
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .history-table th {
+            text-align: left;
+            padding: 12px 16px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .history-table td {
+            padding: 14px 16px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            border-bottom: 1px solid rgba(255,255,255,0.02);
+        }
+        .history-table tr:hover td { background: var(--glass); }
+        .route-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .badge-fast-track { background: var(--success-glow); color: var(--success); }
+        .badge-manual-review { background: var(--warning-glow); color: var(--warning); }
+        .badge-investigation { background: var(--danger-glow); color: var(--danger); }
+        .badge-specialist { background: var(--specialist-glow); color: var(--specialist); }
+        .badge-standard { background: var(--info-glow); color: var(--info); }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* ===== SCROLLBAR ===== */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 10px; }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-in { animation: fadeInUp 0.5s ease forwards; }
+        .delay-1 { animation-delay: 0.1s; opacity: 0; }
+        .delay-2 { animation-delay: 0.2s; opacity: 0; }
+        .delay-3 { animation-delay: 0.3s; opacity: 0; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 640px) {
+            .app-container { padding: 24px 16px 60px; }
+            .card { padding: 20px; }
+            .upload-zone { padding: 36px 20px; }
+            .route-banner { flex-wrap: wrap; }
+            .route-banner .claim-id { margin-left: 0; margin-top: 8px; }
+            .fields-grid { grid-template-columns: 1fr; }
+            .samples-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background effects -->
+    <div class="bg-effects">
+        <div class="orb"></div>
+        <div class="orb"></div>
+        <div class="orb"></div>
+    </div>
+    <div class="noise-overlay"></div>
+
+    <!-- Processing overlay -->
+    <div class="processing-overlay" id="processingOverlay">
+        <div style="text-align:center; margin-bottom: 8px;">
+            <div style="font-size:48px; margin-bottom:12px;">🤖</div>
+            <h2 style="font-size:20px; font-weight:700; color:var(--text-primary);">Processing Claim</h2>
+            <p style="font-size:13px; color:var(--text-muted);">AI agent is analyzing your document...</p>
+        </div>
+        <div class="processing-steps">
+            <div class="p-step" id="step1">
+                <div class="step-icon">📄</div>
+                <div class="step-text">Extracting text from document</div>
+            </div>
+            <div class="p-step" id="step2">
+                <div class="step-icon">🧠</div>
+                <div class="step-text">AI extracting structured fields</div>
+            </div>
+            <div class="p-step" id="step3">
+                <div class="step-icon">✅</div>
+                <div class="step-text">Validating data & checking consistency</div>
+            </div>
+            <div class="p-step" id="step4">
+                <div class="step-icon">🔀</div>
+                <div class="step-text">Routing claim to correct workflow</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div class="app-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="badge"><span class="dot"></span> Autonomous Agent — Active</div>
+            <h1>🤖 Insurance Claims Processor Agent</h1>
+            <p>Upload an FNOL document (PDF or TXT). The AI agent extracts fields, validates data, and routes your claim automatically.</p>
+        </div>
+
+        <!-- Upload Section -->
+        <div class="card animate-in delay-1">
+            <div class="card-title">
+                <div class="icon" style="background:var(--accent-glow); color:var(--accent);">📁</div>
+                Upload FNOL Document
+            </div>
+            <div class="upload-zone" id="uploadZone">
+                <div class="upload-icon">☁️</div>
+                <h3>Drag & drop your file here</h3>
+                <p>or click to browse from your computer</p>
+                <div class="formats">
+                    <span class="format-tag">.PDF</span>
+                    <span class="format-tag">.TXT</span>
+                </div>
+                <input type="file" id="fileInput" accept=".pdf,.txt">
+            </div>
+        </div>
+
+        <!-- Sample Documents -->
+        <div class="card animate-in delay-2">
+            <div class="card-title">
+                <div class="icon" style="background:rgba(72,198,239,0.12); color:var(--info);">🧪</div>
+                Quick Test — Sample FNOL Documents
+            </div>
+            <div class="samples-grid" id="samplesGrid">
+                <!-- Loaded dynamically -->
+                <div class="empty-state">Loading samples...</div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="result-section" id="resultSection">
+            <!-- Route Banner -->
+            <div id="routeBanner" class="route-banner route-standard"></div>
+
+            <!-- Alerts -->
+            <div id="alertsContainer"></div>
+
+            <!-- Extracted Fields -->
+            <div class="card animate-in">
+                <div class="card-title">
+                    <div class="icon" style="background:var(--accent-glow); color:var(--accent);">📋</div>
+                    Extracted Fields
+                </div>
+                <div class="fields-grid" id="fieldsGrid"></div>
+            </div>
+
+            <!-- JSON Output -->
+            <div class="card animate-in">
+                <div class="card-title">
+                    <div class="icon" style="background:rgba(0,210,160,0.12); color:var(--success);">{ }</div>
+                    JSON Output
+                </div>
+                <div class="json-container">
+                    <div class="json-header">
+                        <span>output.json</span>
+                        <button class="copy-btn" onclick="copyJSON()">Copy</button>
+                    </div>
+                    <div class="json-body">
+                        <pre id="jsonOutput"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- History -->
+        <div class="card animate-in delay-3">
+            <div class="card-title">
+                <div class="icon" style="background:rgba(255,197,61,0.12); color:var(--warning);">📊</div>
+                Processing History
+            </div>
+            <div id="historyContainer">
+                <div class="empty-state">No claims processed yet. Upload a document to get started.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== ALL JAVASCRIPT ===== -->
+    <script>
+        // ===== STATE =====
+        let currentResult = null;
+
+        // ===== SAMPLE EMOJI MAP =====
+        const sampleEmojis = {
+            'fast_track': '⚡', 'manual_review': '📝', 'investigation': '🔍',
+            'specialist': '🏥', 'standard': '📦'
+        };
+        const sampleLabels = {
+            'fast_track': 'Fast-track Claim', 'manual_review': 'Manual Review',
+            'investigation': 'Investigation Flag', 'specialist': 'Specialist (Injury)',
+            'standard': 'Standard Processing'
+        };
+        const sampleSubs = {
+            'fast_track': 'Low damage, all fields', 'manual_review': 'Missing fields',
+            'investigation': 'Fraud keywords', 'specialist': 'Injury claim',
+            'standard': 'Above ₹25K threshold'
+        };
+
+        // ===== INIT =====
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSamples();
+            setupUpload();
+        });
+
+        // ===== LOAD SAMPLES =====
+        async function loadSamples() {
+            try {
+                const resp = await fetch('/api/sample-claims');
+                const files = await resp.json();
+                const grid = document.getElementById('samplesGrid');
+
+                if (files.length === 0) {
+                    grid.innerHTML = '<div class="empty-state">No sample files found. Run generate_samples.py first.</div>';
+                    return;
+                }
+
+                grid.innerHTML = files.map(f => {
+                    let key = 'standard';
+                    for (const k of Object.keys(sampleEmojis)) {
+                        if (f.includes(k)) { key = k; break; }
+                    }
+                    return `<button class="sample-btn" onclick="processSample('${f}', this)">
+                        <span class="emoji">${sampleEmojis[key] || '📄'}</span>
+                        <span class="label">
+                            ${sampleLabels[key] || f}
+                            <span class="sub">${sampleSubs[key] || f}</span>
+                        </span>
+                    </button>`;
+                }).join('');
+            } catch (e) {
+                document.getElementById('samplesGrid').innerHTML = '<div class="empty-state">Could not load samples</div>';
+            }
+        }
+
+        // ===== SETUP UPLOAD =====
+        function setupUpload() {
+            const zone = document.getElementById('uploadZone');
+            const input = document.getElementById('fileInput');
+
+            zone.addEventListener('click', () => input.click());
+            input.addEventListener('change', e => {
+                if (e.target.files.length > 0) uploadFile(e.target.files[0]);
+            });
+
+            zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+            zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+            zone.addEventListener('drop', e => {
+                e.preventDefault();
+                zone.classList.remove('dragover');
+                if (e.dataTransfer.files.length > 0) uploadFile(e.dataTransfer.files[0]);
+            });
+        }
+
+        // ===== UPLOAD FILE =====
+        async function uploadFile(file) {
+            const ext = file.name.split('.').pop().toLowerCase();
+            if (!['pdf', 'txt'].includes(ext)) {
+                alert('Only PDF and TXT files are supported.');
+                return;
+            }
+
+            showProcessing();
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const resp = await fetch('/api/process-claim', { method: 'POST', body: formData });
+                const data = await resp.json();
+                hideProcessing();
+
+                if (resp.ok) {
+                    displayResult(data);
+                    loadHistory();
+                } else {
+                    alert(data.error || 'Processing failed');
+                }
+            } catch (e) {
+                hideProcessing();
+                alert('Network error: ' + e.message);
+            }
+        }
+
+        // ===== PROCESS SAMPLE =====
+        async function processSample(filename, btn) {
+            const allBtns = document.querySelectorAll('.sample-btn');
+            allBtns.forEach(b => b.disabled = true);
+            showProcessing();
+
+            try {
+                const resp = await fetch(`/api/process-sample/${filename}`, { method: 'POST' });
+                const data = await resp.json();
+                hideProcessing();
+                allBtns.forEach(b => b.disabled = false);
+
+                if (resp.ok) {
+                    displayResult(data);
+                    loadHistory();
+                } else {
+                    alert(data.error || 'Processing failed');
+                }
+            } catch (e) {
+                hideProcessing();
+                allBtns.forEach(b => b.disabled = false);
+                alert('Network error: ' + e.message);
+            }
+        }
+
+        // ===== PROCESSING ANIMATION =====
+        function showProcessing() {
+            const overlay = document.getElementById('processingOverlay');
+            overlay.classList.add('active');
+            const steps = ['step1', 'step2', 'step3', 'step4'];
+            steps.forEach(s => {
+                document.getElementById(s).classList.remove('active', 'done');
+            });
+            // Animate steps sequentially
+            let i = 0;
+            const interval = setInterval(() => {
+                if (i > 0) document.getElementById(steps[i - 1]).classList.replace('active', 'done');
+                if (i < steps.length) document.getElementById(steps[i]).classList.add('active');
+                else clearInterval(interval);
+                i++;
+            }, 600);
+        }
+
+        function hideProcessing() {
+            const overlay = document.getElementById('processingOverlay');
+            // Mark last step done
+            document.querySelectorAll('.p-step.active').forEach(s => s.classList.replace('active', 'done'));
+            setTimeout(() => overlay.classList.remove('active'), 500);
+        }
+
+        // ===== DISPLAY RESULT =====
+        function displayResult(data) {
+            currentResult = data;
+            const section = document.getElementById('resultSection');
+            section.classList.add('visible');
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            // Route banner
+            const banner = document.getElementById('routeBanner');
+            const route = data.recommendedRoute;
+            const routeConfig = {
+                'Fast-track': { class: 'route-fast-track', icon: '⚡', label: 'Fast-track Processing' },
+                'Manual Review': { class: 'route-manual-review', icon: '📝', label: 'Manual Review Required' },
+                'Investigation Flag': { class: 'route-investigation', icon: '🚨', label: 'Investigation Flagged' },
+                'Specialist Queue': { class: 'route-specialist', icon: '🏥', label: 'Specialist Queue' },
+                'Standard Processing': { class: 'route-standard', icon: '📦', label: 'Standard Processing' }
+            };
+            const rc = routeConfig[route] || routeConfig['Standard Processing'];
+            banner.className = `route-banner ${rc.class}`;
+            banner.innerHTML = `
+                <div class="route-icon">${rc.icon}</div>
+                <div class="route-text">
+                    <h2>${rc.label}</h2>
+                    <p>${data.reasoning}</p>
+                </div>
+                <div class="claim-id">${data.claimId}</div>
+            `;
+
+            // Alerts
+            const alertsHtml = [];
+            if (data.missingFields && data.missingFields.length > 0) {
+                const items = data.missingFields.map(f => f.split('.').pop()).join(', ');
+                alertsHtml.push(`<div class="alert-box warning">
+                    <span class="alert-icon">⚠️</span>
+                    <div class="alert-content">
+                        <div class="alert-title">Missing Fields (${data.missingFields.length})</div>
+                        <div class="alert-list">${items}</div>
+                    </div>
+                </div>`);
+            }
+            if (data.inconsistencies && data.inconsistencies.length > 0) {
+                alertsHtml.push(`<div class="alert-box danger">
+                    <span class="alert-icon">🔴</span>
+                    <div class="alert-content">
+                        <div class="alert-title">Inconsistencies Found</div>
+                        <div class="alert-list">${data.inconsistencies.join('<br>')}</div>
+                    </div>
+                </div>`);
+            }
+            document.getElementById('alertsContainer').innerHTML = alertsHtml.join('');
+
+            // Fields grid
+            const fields = data.extractedFields;
+            const sections = {
+                'Policy Information': fields.policyInformation,
+                'Incident Information': fields.incidentInformation,
+                'Involved Parties': fields.involvedParties,
+                'Asset Details': fields.assetDetails,
+                'Other Fields': fields.otherFields
+            };
+
+            const fieldsHtml = Object.entries(sections).map(([title, sectionData]) => {
+                const rows = Object.entries(sectionData || {}).map(([key, val]) => {
+                    const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase());
+                    const isMissing = !val || (typeof val === 'string' && val.trim() === '');
+                    const displayVal = isMissing ? '— Missing' : val;
+                    const valClass = isMissing ? 'field-value missing' : 'field-value';
+                    return `<div class="field-row">
+                        <span class="field-key">${label}</span>
+                        <span class="${valClass}">${displayVal}</span>
+                    </div>`;
+                }).join('');
+                return `<div class="field-section"><h4>${title}</h4>${rows}</div>`;
+            }).join('');
+            document.getElementById('fieldsGrid').innerHTML = fieldsHtml;
+
+            // JSON Output (formatted as per assignment requirement)
+            const jsonOutput = {
+                extractedFields: data.extractedFields,
+                missingFields: data.missingFields,
+                recommendedRoute: data.recommendedRoute,
+                reasoning: data.reasoning
+            };
+            document.getElementById('jsonOutput').textContent = JSON.stringify(jsonOutput, null, 2);
+        }
+
+        // ===== COPY JSON =====
+        function copyJSON() {
+            const text = document.getElementById('jsonOutput').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                btn.textContent = 'Copied!';
+                setTimeout(() => btn.textContent = 'Copy', 2000);
+            });
+        }
+
+        // ===== LOAD HISTORY =====
+        async function loadHistory() {
+            try {
+                const resp = await fetch('/api/claims');
+                const claims = await resp.json();
+                const container = document.getElementById('historyContainer');
+
+                if (claims.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No claims processed yet.</div>';
+                    return;
+                }
+
+                const badgeClass = r => {
+                    const map = {
+                        'Fast-track': 'badge-fast-track', 'Manual Review': 'badge-manual-review',
+                        'Investigation Flag': 'badge-investigation', 'Specialist Queue': 'badge-specialist',
+                        'Standard Processing': 'badge-standard'
+                    };
+                    return map[r] || 'badge-standard';
+                };
+
+                container.innerHTML = `<table class="history-table">
+                    <thead><tr><th>Claim ID</th><th>File</th><th>Route</th><th>Missing</th><th>Time</th></tr></thead>
+                    <tbody>${claims.map(c => `<tr>
+                        <td style="font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-primary);">${c.claimId}</td>
+                        <td>${c.filename}</td>
+                        <td><span class="route-badge ${badgeClass(c.recommendedRoute)}">${c.recommendedRoute}</span></td>
+                        <td>${c.missingFields.length > 0 ? c.missingFields.length + ' field(s)' : '✓ Complete'}</td>
+                        <td style="font-size:11px;">${new Date(c.processedAt).toLocaleTimeString()}</td>
+                    </tr>`).join('')}</tbody>
+                </table>`;
+            } catch (e) { /* ignore */ }
+        }
+    </script>
+</body>
+</html>
